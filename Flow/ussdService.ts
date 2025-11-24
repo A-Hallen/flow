@@ -2,7 +2,7 @@ import { NativeModules, PermissionsAndroid, Platform } from 'react-native';
 
 import { useCardConfigStore } from './cardConfigStore';
 
-const DEFAULT_LOGIN_USSD = '*444*40*770249*0549730*1250120#';
+const DEFAULT_LOGIN_USSD = '';
 const DEFAULT_BALANCE_USSD = '*444*46#';
 
 type NativeUssdModule = {
