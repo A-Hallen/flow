@@ -28,7 +28,7 @@
         "android.permission.CAMERA",
         "android.permission.CAMERA"
       ],
-      "package": "com.anonymous.Flow"
+      "package": "com.hallen.flow"
     },
     "web": {
       "output": "static",
@@ -52,6 +52,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6299e8ae-eb20-4993-adb4-9966feb3576a"
+      }
     }
   }
 }

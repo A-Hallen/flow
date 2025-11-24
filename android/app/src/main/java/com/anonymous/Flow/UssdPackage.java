@@ -1,4 +1,4 @@
-package com.anonymous.Flow;
+package com.hallen.Flow;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

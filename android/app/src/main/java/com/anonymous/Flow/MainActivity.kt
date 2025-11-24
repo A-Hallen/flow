@@ -1,4 +1,4 @@
-package com.anonymous.Flow
+package com.hallen.Flow
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
