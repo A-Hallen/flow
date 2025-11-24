@@ -2,21 +2,34 @@ import { Feather } from '@expo/vector-icons';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
+export type FlowTransactionCategory =
+  | 'transfer_in'
+  | 'transfer_out'
+  | 'wallet'
+  | 'topup'
+  | 'online_payment'
+  | 'electricity';
+
 export type FlowTransaction = {
-  id: number;
+  id: string;
   type: 'sent' | 'received';
   amount: number;
   description: string;
   date: string;
+  category: FlowTransactionCategory;
+  meta?: string;
+  avatarUri?: string | null;
+  contactName?: string | null;
 };
 
 type Props = {
   transactions: FlowTransaction[];
   onPressTransfer: () => void;
   onPressHistory: () => void;
+  onPressCard: () => void;
 };
 
-export function FlowHomeView({ transactions, onPressTransfer, onPressHistory }: Props) {
+export function FlowHomeView({ transactions, onPressTransfer, onPressHistory, onPressCard }: Props) {
   return (
     <ScrollView
       className="px-6 pt-8"
@@ -52,13 +65,17 @@ export function FlowHomeView({ transactions, onPressTransfer, onPressHistory }: 
           <Text className="font-bold text-gray-700 text-sm">Electricidad</Text>
         </View>
 
-        <View className="bg-violet-900 flex-1 p-4 min-w-[150px] rounded-[22px] shadow-[0_18px_45px_rgba(15,23,42,0.45)] border border-violet-800 overflow-hidden">
+        <TouchableOpacity
+          onPress={onPressCard}
+          activeOpacity={0.9}
+          className="bg-violet-900 flex-1 p-4 min-w-[150px] rounded-[22px] shadow-[0_18px_45px_rgba(15,23,42,0.45)] border border-violet-800 overflow-hidden"
+        >
           <View className="absolute right-0 top-0 w-20 h-20 bg-white/5 rounded-full -mr-5 -mt-5" />
           <View className="bg-white/10 p-3 rounded-2xl mb-1">
             <Feather name="credit-card" size={24} color="#F9A8D4" />
           </View>
           <Text className="font-bold text-white text-sm">Mi Tarjeta</Text>
-        </View>
+        </TouchableOpacity>
       </Animated.View>
 
       <View className="flex-row items-end justify-between mb-5">
@@ -74,21 +91,47 @@ export function FlowHomeView({ transactions, onPressTransfer, onPressHistory }: 
       >
         {transactions.slice(0, 3).map((tx) => {
           const sent = tx.type === 'sent';
+
+          let iconName: keyof typeof Feather.glyphMap = 'arrow-up-right';
+          let iconColor = '#F97316';
+          let iconBg = 'bg-orange-50';
+
+          if (tx.category === 'transfer_in') {
+            iconName = 'arrow-down-left';
+            iconColor = '#16A34A';
+            iconBg = 'bg-green-50';
+          } else if (tx.category === 'wallet') {
+            iconName = 'smartphone';
+            iconColor = '#C026D3';
+            iconBg = 'bg-fuchsia-50';
+          } else if (tx.category === 'topup') {
+            iconName = 'smartphone';
+            iconColor = '#2563EB';
+            iconBg = 'bg-blue-50';
+          } else if (tx.category === 'online_payment') {
+            iconName = 'shopping-bag';
+            iconColor = '#0EA5E9';
+            iconBg = 'bg-sky-50';
+          } else if (tx.category === 'electricity') {
+            iconName = 'zap';
+            iconColor = '#FACC15';
+            iconBg = 'bg-yellow-50';
+          }
+
           return (
             <View
               key={tx.id}
               className="bg-white p-4 rounded-2xl shadow-[0_10px_30px_rgba(15,23,42,0.04)] border border-gray-50 flex-row items-center justify-between"
             >
               <View className="flex-row items-center gap-4">
-                <View className={`p-3 rounded-full ${sent ? 'bg-orange-50' : 'bg-green-50'}`}>
-                  <Feather
-                    name={sent ? 'arrow-up-right' : 'arrow-down-left'}
-                    size={20}
-                    color={sent ? '#F97316' : '#16A34A'}
-                  />
+                <View className={`p-3 rounded-full ${iconBg}`}>
+                  <Feather name={iconName} size={20} color={iconColor} />
                 </View>
                 <View>
                   <Text className="font-bold text-gray-700 text-sm">{tx.description}</Text>
+                  {tx.meta ? (
+                    <Text className="text-[11px] text-gray-400 font-medium mt-0.5">{tx.meta}</Text>
+                  ) : null}
                   <Text className="text-[11px] text-gray-400 font-medium mt-0.5">{tx.date}</Text>
                 </View>
               </View>

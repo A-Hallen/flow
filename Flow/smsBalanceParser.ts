@@ -3,7 +3,7 @@ export type ParsedBalance = {
   source: 'simple' | 'summary';
 };
 
-function parseNumber(value: string): number | null {
+export function parseNumber(value: string): number | null {
   const normalized = value.replace(/[^0-9.,]/g, '').replace(',', '');
   const parsed = parseFloat(normalized);
   if (Number.isNaN(parsed)) {
@@ -13,7 +13,7 @@ function parseNumber(value: string): number | null {
 }
 
 function parseSimpleBalance(message: string): ParsedBalance | null {
-  const regex = /Saldo\s+(disponible|restante):\s*CR\s*([0-9.,]+)/i;
+  const regex = /Saldo\s+(disponible|restante)\s*:\s*(?:CR\s*)?([0-9.,]+)/i;
   const match = message.match(regex);
   if (!match) {
     return null;

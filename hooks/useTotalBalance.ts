@@ -22,7 +22,6 @@ export function useTotalBalanceFromSms(initialBalance: number | null = null): Us
     try {
       const result = await getTotalBalanceFromSms(options);
       if (!result) {
-        setError('No se pudo actualizar tu saldo en este momento.');
         return;
       }
       setBalance(result.balance);

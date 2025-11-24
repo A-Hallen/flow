@@ -1,3 +1,4 @@
+import type { BankId } from '@/Flow/cardMeta';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -6,6 +7,9 @@ import { Text, TouchableOpacity, View } from 'react-native';
 type Props = {
   balance: number;
   onRefresh: () => void;
+  refreshing?: boolean;
+  success?: boolean;
+  bank?: BankId;
 };
 
 function FlowLogo() {
@@ -18,7 +22,9 @@ function FlowLogo() {
   );
 }
 
-export function FlowHeader({ balance, onRefresh }: Props) {
+export function FlowHeader({ balance, onRefresh, refreshing, success, bank }: Props) {
+  const bankLabel = bank === 'BPA' || bank === 'BANDEC' ? bank : null;
+
   return (
     <LinearGradient
       colors={['#1f1459', '#a21caf', '#f97316']}
@@ -28,8 +34,7 @@ export function FlowHeader({ balance, onRefresh }: Props) {
     >
       <StatusBar style="light" />
       <View className="flex-row items-center justify-between px-6 pt-12 pb-1">
-        <View className="flex-row items-center gap-1.5 opacity-80">
-        </View>
+        <View className="flex-row items-center gap-1.5 opacity-80" />
       </View>
 
       <View className="absolute -top-8 -right-10 w-64 h-64 bg-yellow-300 rounded-full opacity-30" />
@@ -39,6 +44,13 @@ export function FlowHeader({ balance, onRefresh }: Props) {
         <View className="flex-row items-center gap-3">
           <FlowLogo />
           <Text className="font-bold text-2xl tracking-wide text-white italic">Flow.</Text>
+          {bankLabel && (
+            <View className="px-3 py-1 rounded-full bg-white/15 border border-white/30">
+              <Text className="text-[10px] font-semibold text-white tracking-[1px] uppercase">
+                {bankLabel}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -54,11 +66,18 @@ export function FlowHeader({ balance, onRefresh }: Props) {
         </View>
         <TouchableOpacity
           onPress={onRefresh}
+          disabled={!!refreshing}
           activeOpacity={0.8}
-          className="flex-row items-center gap-2 bg-white/10 px-5 py-2.5 rounded-full border border-white/20"
+          className="flex-row items-center mb-3 gap-2 bg-white/10 px-5 py-2.5 rounded-full border border-white/20"
         >
-          <Feather name="refresh-ccw" size={14} color="white" />
-          <Text className="text-[11px] font-bold text-white tracking-[1px]">ACTUALIZAR</Text>
+          <Feather
+            name={success ? 'check' : 'refresh-ccw'}
+            size={14}
+            color="white"
+          />
+          <Text className="text-[11px] font-bold text-white tracking-[1px]">
+            {refreshing ? 'ACTUALIZANDO...' : success ? 'ACTUALIZADO' : 'ACTUALIZAR'}
+          </Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>

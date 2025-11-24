@@ -2,7 +2,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import SmsAndroid from 'react-native-get-sms-android';
 import { parseBalanceFromSms, type ParsedBalance } from './smsBalanceParser';
 
-const DEFAULT_SENDER_ADDRESS = '7246966845';
+const DEFAULT_SENDER_ADDRESS = 'PAGOxMOVIL';
 
 export type SmsBalanceResult = {
   balance: number;
@@ -19,11 +19,9 @@ type NativeSmsMessage = {
 
 async function ensurePermissions(): Promise<boolean> {
   if (Platform.OS !== 'android') {
-    console.log('[sms] non-android platform', Platform.OS);
     return false;
   }
   const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_SMS);
-  console.log('[sms] permission result', granted);
   return granted === PermissionsAndroid.RESULTS.GRANTED;
 }
 
@@ -35,20 +33,16 @@ function listSms(senderAddress: string, max: number): Promise<NativeSmsMessage[]
   } as const;
 
   return new Promise((resolve) => {
-    console.log('[sms] listing inbox', filter);
     SmsAndroid.list(
       JSON.stringify(filter),
       (error: string) => {
-        console.log('[sms] list error', error);
         resolve([]);
       },
       (_count: number, sms: string) => {
         try {
           const parsed = JSON.parse(sms) as NativeSmsMessage[];
-          console.log('[sms] list success count', _count);
           resolve(parsed);
         } catch {
-          console.log('[sms] list parse error');
           resolve([]);
         }
       },
@@ -72,30 +66,42 @@ export type GetTotalBalanceOptions = {
 export async function getTotalBalanceFromSms(options: GetTotalBalanceOptions = {}): Promise<SmsBalanceResult | null> {
   const hasPermission = await ensurePermissions();
   if (!hasPermission) {
-    console.log('[sms] permission denied');
     return null;
   }
   const sender = options.senderAddress ?? DEFAULT_SENDER_ADDRESS;
-  const max = options.maxMessages ?? 50;
+  const max = options.maxMessages ?? 20;
   const messages = await readInboxMessages(sender, max);
-  console.log('[sms] messages length', messages.length);
   if (!messages.length) {
     return null;
   }
   const sorted = [...messages].sort((a, b) => b.date - a.date);
-  console.log('[sms] first message', sorted[0]);
-  for (const msg of sorted) {
-    console.log('[sms] parsing body', msg.body);
+  const candidates = sorted.reduce<{ msg: NativeSmsMessage; parsed: ParsedBalance }[]>((acc, msg) => {
     const parsed = parseBalanceFromSms(msg.body, options.cardPrefix);
-    console.log('[sms] parsed result', parsed);
     if (parsed) {
-      return {
-        balance: parsed.balance,
-        rawMessage: msg.body,
-        date: Number.isFinite(msg.date) ? new Date(msg.date) : null,
-        source: parsed.source,
-      };
+      acc.push({ msg, parsed });
     }
+    return acc;
+  }, []);
+
+  if (!candidates.length) {
+    return null;
   }
-  return null;
+
+  const best = candidates.reduce((current, item) => {
+    if (!current) {
+      return item;
+    }
+    return item.msg.date > current.msg.date ? item : current;
+  });
+
+  const result: SmsBalanceResult = {
+    balance: best.parsed.balance,
+    rawMessage: best.msg.body,
+    date: Number.isFinite(best.msg.date) ? new Date(best.msg.date) : null,
+    source: best.parsed.source,
+  };
+
+  console.log('[sms] best balance', result.balance, result.date);
+
+  return result;
 }

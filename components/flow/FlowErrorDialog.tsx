@@ -17,7 +17,7 @@ export function FlowErrorDialog({ visible, message, onClose }: Props) {
       <Animated.View
         entering={FadeInDown.duration(260).springify()}
         exiting={FadeOutDown.duration(200)}
-        className="w-full max-w-xs rounded-3xl bg-gray-900/95 border border-red-500/25 shadow-2xl px-6 py-7"
+        className="w-full max-w-xs rounded-3xl bg-gray-900/95 shadow-2xl px-6 py-7"
       >
         <View className="items-center mb-4">
           <View className="w-12 h-12 rounded-full bg-red-500/10 border border-red-400/70 items-center justify-center mb-2">
